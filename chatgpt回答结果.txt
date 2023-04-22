@@ -1,0 +1,45 @@
+问题1：Maven如何将普通java程序打成jar包直接运行
+
+要将普通的Java程序打成可执行的JAR包，您需要遵循以下步骤来配置Maven：
+
+1. 创建一个Maven项目并在pom.xml文件中添加以下插件依赖项：
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+                <archive>
+                    <manifest>
+                        <addClasspath>true</addClasspath>
+                        <mainClass>com.example.MainClass</mainClass>
+                    </manifest>
+                </archive>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+上述插件依赖项指定了Maven JAR插件版本、JAR包归档配置，以及主类（即包含main()方法的类）。
+
+2. 将您的源代码和资源文件放置在标准的Maven项目目录结构下，如src/main/java和src/main/resources。
+
+3. 执行以下命令来生成JAR包：
+
+```
+mvn clean package
+```
+
+该命令将编译您的代码并将其打包为JAR文件。在target目录中，您将找到一个名为`your-project-name.jar`的可执行JAR文件。
+
+4. 运行JAR文件：
+
+```
+java -jar your-project-name.jar
+```
+
+注意：确保替换“your-project-name”为实际的项目名称，并将“com.example.MainClass”替换为您的主类的完整名称。如果您的主类在包中，则将其完整路径包含在内（例如，“com.example.myapp.MainClass”）。
