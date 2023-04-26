@@ -43,3 +43,32 @@ java -jar your-project-name.jar
 ```
 
 注意：确保替换“your-project-name”为实际的项目名称，并将“com.example.MainClass”替换为您的主类的完整名称。如果您的主类在包中，则将其完整路径包含在内（例如，“com.example.myapp.MainClass”）。
+
+
+
+使用 impdp 命令可以导入 Oracle 数据库中的表。以下是导入单张表的步骤：
+
+1. 打开命令行终端或 SQL*Plus 环境。
+2. 使用管理员账户登录到数据库。
+3. 输入以下命令来导出源表的元数据和数据：
+
+   ```
+   expdp username/password@database_name schemas=schema_name tables=table_name directory=directory_name dumpfile=dump_file_name.dmp logfile=log_file_name.log
+   ```
+   
+   其中，username 是数据库用户名称，password 是密码，database_name 是数据库名称，schema_name 是表所在的模式名称，table_name 是要导出的表名，directory_name 是指定导出文件的目录，dump_file_name.dmp 是导出文件的名称，log_file_name.log 是导出日志文件的名称。如果需要导出多个表，可以在 tables 参数中指定多个表名，用逗号分隔。
+   
+4. 将导出的文件传输到目标数据库服务器上。
+5. 在目标数据库服务器上打开命令行终端或 SQL*Plus 环境。
+6. 使用管理员账户登录到数据库。
+7. 输入以下命令来导入源表的元数据和数据：
+
+   ```
+   impdp username/password@database_name schemas=schema_name tables=table_name directory=directory_name dumpfile=dump_file_name.dmp logfile=log_file_name.log
+   ```
+
+   其中，username 是数据库用户名称，password 是密码，database_name 是数据库名称，schema_name 是表所在的模式名称，table_name 是要导入的表名，directory_name 是指定导入文件的目录，dump_file_name.dmp 是导出文件的名称，log_file_name.log 是导入日志文件的名称。如果需要导入多个表，可以在 tables 参数中指定多个表名，用逗号分隔。
+
+8. 等待导入完成。
+
+注意：在导入表之前，请确保目标数据库中不存在同名的表。如果存在同名表，可以使用 impdp 命令的 REMAP_TABLE 参数来重命名要导入的表。
