@@ -1,8 +1,8 @@
 ## db.setting文件
 
-url = jdbc:oracle:thin:@10.203.88.25:1521:orcl
-user = fspt3
-pass = fspt
+url = 
+user = 
+pass = 
 
 ## 可选配置
 # 是否在日志中显示执行的SQL
