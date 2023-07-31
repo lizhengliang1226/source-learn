@@ -10,3 +10,4 @@ com.lzl.datagenerator.coldatagen.MarketColData
 com.lzl.datagenerator.coldatagen.CurrencyColData
 com.lzl.datagenerator.coldatagen.TrdacctColData
 com.lzl.datagenerator.coldatagen.OptSideColData
+com.lzl.datagenerator.coldatagen.IdColData

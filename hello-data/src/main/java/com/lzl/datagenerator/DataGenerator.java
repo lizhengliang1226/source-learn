@@ -18,18 +18,9 @@ import java.util.stream.Stream;
 import static com.lzl.datagenerator.GlobalSetting.dataCount;
 
 /**
- * 版权声明：本程序模块属于后台业务系统（FSPT）的一部分
- * 金证科技股份有限公司 版权所有<br>
- * <p>
- * 模块名称：期权业务-<br>
- * 模块描述：期权业务-<br>
- * 开发作者：李正良<br>
- * 创建日期：2023/07/04<br>
- * 模块版本：1.0.0.0<br>
- * ----------------------------------------------------------------<br>
- * 修改日期      版本       作者      备注<br>
- * 2023/07/04   1.0.0.0   李正良      创建<br>
- * -----------------------------------------------------------------</p>
+ * @author LZL
+ * @version v1.0
+ * @date 2023/7/31-22:24
  */
 public class DataGenerator {
     private String DEL_TABLE_TMPL = "TRUNCATE TABLE %s";
@@ -38,50 +29,65 @@ public class DataGenerator {
         List<Pair<String, List<Entity>>> result = GlobalSetting.tableNames.stream().map(tableCode -> {
             Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(), tableCode);
             // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
-            Set<String> uniqueIndexColAndPkSet = Stream.concat(tableInfo.getIndexInfoList()
-                                                                        .stream()
-                                                                        .filter(index -> !index.isNonUnique())
-                                                                        .flatMap(index -> index.getColumnIndexInfoList().stream())
-                                                                        .map(ColumnIndexInfo::getColumnName)
-                                                                        .collect(Collectors.toSet()).stream(), tableInfo.getPkNames().stream())
-                                                       .collect(Collectors.toSet());
-
-            List<Entity> res = new ArrayList<>();
-            for (int i = 0; i < dataCount; i++) {
-                Entity entity = Entity.create(tableCode);
-                for (Column column : tableInfo.getColumns()) {
-                    if ("PARTITION_FIELD".equals(column.getName())) {
-                        continue;
-                    }
-                    // 类型
-                    JdbcType typeEnum = column.getTypeEnum();
-                    // 列名
-                    String colName = column.getName();
-                    // 从上往下取值，优先级从高到低
-                    // 数据生成器取值
-                    Object nextVal = ColInfoGenerator.getNextVal(colName);
-                    // 字段默认值
-                    Object colDefaultVal = ColInfoGenerator.getDefaultValByColName(colName);
-                    // 取字典值
-                    Object dictDefaultVal = ColInfoGenerator.getDictValByColName(colName);
-                    // 类型默认值
-                    Object typeDefaultVal = ColInfoGenerator.getDefaultVal(typeEnum);
-                    if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null) {
-                        Log.get().error("表[{}]主键列或唯一索引列[{}]没有数据生成器，请检查!", tableCode, colName);
-                        throw new RuntimeException();
-                    }
-                    // 根据优先级取值
-                    // 生成器 > 字段默认值 > 字典值 > 类型默认值
-                    entity.set(colName, nextVal == null ?
-                            colDefaultVal == null ?
-                                    dictDefaultVal == null ?
-                                            typeDefaultVal : dictDefaultVal : colDefaultVal : nextVal);
-                }
-                res.add(entity);
-            }
+            Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
+            // 构建数据集
+            List<Entity> res = generateDataList(tableCode, tableInfo, uniqueIndexColAndPkSet);
+            // 重置列的基础数据
             ColInfoGenerator.reset();
             return Pair.of(tableCode, res);
         }).toList();
+        // 保存数据，先全表删除，再全量插入
+        saveData(result);
+    }
+
+    private static Set<String> getUniqueIndexCol(Table tableInfo) {
+        return Stream.concat(tableInfo.getIndexInfoList()
+                                      .stream()
+                                      .filter(index -> !index.isNonUnique())
+                                      .flatMap(index -> index.getColumnIndexInfoList().stream())
+                                      .map(ColumnIndexInfo::getColumnName)
+                                      .collect(Collectors.toSet()).stream(), tableInfo.getPkNames().stream())
+                     .collect(Collectors.toSet());
+    }
+
+    private static List<Entity> generateDataList(String tableCode, Table tableInfo, Set<String> uniqueIndexColAndPkSet) {
+        List<Entity> res = new ArrayList<>();
+        for (int i = 0; i < dataCount; i++) {
+            Entity entity = Entity.create(tableCode);
+            for (Column column : tableInfo.getColumns()) {
+                if ("PARTITION_FIELD".equals(column.getName())) {
+                    continue;
+                }
+                // 类型
+                JdbcType typeEnum = column.getTypeEnum();
+                // 列名
+                String colName = column.getName();
+                // 从上往下取值，优先级从高到低
+                // 数据生成器取值
+                Object nextVal = ColInfoGenerator.getNextVal(colName);
+                // 字段默认值
+                Object colDefaultVal = ColInfoGenerator.getDefaultValByColName(colName);
+                // 取字典值
+                Object dictDefaultVal = ColInfoGenerator.getDictValByColName(colName);
+                // 类型默认值
+                Object typeDefaultVal = ColInfoGenerator.getDefaultVal(typeEnum);
+                if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null) {
+                    Log.get().error("表[{}]主键列或唯一索引列[{}]没有数据生成器，请检查!", tableCode, colName);
+                    throw new RuntimeException();
+                }
+                // 根据优先级取值
+                // 生成器 > 字段默认值 > 字典值 > 类型默认值
+                entity.set(colName, nextVal == null ?
+                        colDefaultVal == null ?
+                                dictDefaultVal == null ?
+                                        typeDefaultVal : dictDefaultVal : colDefaultVal : nextVal);
+            }
+            res.add(entity);
+        }
+        return res;
+    }
+
+    private void saveData(List<Pair<String, List<Entity>>> result) {
         // 保存数据
         result.parallelStream().forEach(dataPair -> {
             Log.get().info("开始删除表{}数据.", dataPair.getKey());
