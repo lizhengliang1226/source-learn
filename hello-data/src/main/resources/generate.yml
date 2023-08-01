@@ -1,0 +1,9 @@
+column-config:
+  - CUST_CODE:
+      strategy: fixed-value
+      value: 120000000
+  - CUACCT_CODE
+
+table-list:
+  - TB_A:
+      data-count: 100

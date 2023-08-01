@@ -1,0 +1,12 @@
+# 数据量
+dataCount=10000
+# 生成表
+tableList=a:1
+# 是否加载字典缓存
+loadDictCache=false
+# 字典缓存的表名
+dictTableName=
+# 字典表的字典代码的列名
+dictCodeColName=
+# 字典表的字典项的列名
+dictItemColName=
