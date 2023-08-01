@@ -1,9 +1,24 @@
-column-config:
-  - CUST_CODE:
-      strategy: fixed-value
-      value: 120000000
-  - CUACCT_CODE
-
-table-list:
-  - TB_A:
-      data-count: 100
+columnConfig:
+  - colName: CUST_CODE
+    strategy: fixed-value
+    fixedValue: 120000000
+  - colName: CUACCT_CODE
+    strategy: auto-inc
+    baseValue: 0
+  - colName: OPT_SIDE
+    strategy: dict-value
+  - colName: OPT_NUM
+    strategy: rand-ele
+    randomEle: ["a","b","c"]
+  - colName: OPT_CODE
+    strategy: rand-table-ele
+    querySql: select OPT_NAME from OPT_INFO
+    queryCol: OPT_NAME
+tableConfig:
+  - tableName: OPT_INFO
+    dataCount: 100
+    genFlag: 1
+dictConfig:
+  dictTableName: UPM_DICT_ITEMS
+  dictCodeColName: DICT_CODE
+  dictItemColName: DICT_ITEM

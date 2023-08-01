@@ -1,7 +1,7 @@
 package com.lzl.datagenerator.coldatagen;
 
 
-import com.lzl.datagenerator.ColData;
+import com.lzl.datagenerator.proxy.ColData;
 
 /**
  * @author LZL

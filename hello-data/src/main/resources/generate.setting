@@ -1,12 +1,12 @@
 # 数据量
 dataCount=10000
 # 生成表
-tableList=a:1
+tableList=CUACCT:1
 # 是否加载字典缓存
-loadDictCache=false
+loadDictCache=true
 # 字典缓存的表名
-dictTableName=
+dictTableName=UPM_DICT_ITEMS
 # 字典表的字典代码的列名
-dictCodeColName=
+dictCodeColName=DICT_CODE
 # 字典表的字典项的列名
-dictItemColName=
+dictItemColName=DICT_ITEM

@@ -25,7 +25,7 @@ import static com.lzl.datagenerator.GlobalSetting.dataCount;
 public class DataGenerator {
     private String DEL_TABLE_TMPL = "TRUNCATE TABLE %s";
 
-    public void test() {
+    public void generate() {
         List<Pair<String, List<Entity>>> result = GlobalSetting.tableNames.stream().map(tableCode -> {
             Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(), tableCode);
             // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据

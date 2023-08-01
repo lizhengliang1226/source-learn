@@ -16,6 +16,18 @@
     </properties>
 
     <dependencies>
+        <!--       lombok依赖-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.10</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.3.0</version>
+        </dependency>
         <!-- Maven -->
         <dependency>
             <groupId>org.yaml</groupId>
@@ -77,10 +89,10 @@
                 <directory>src/main/resources/bin</directory>
                 <targetPath>${basedir}/HELLO-DATA/bin</targetPath>
             </resource>
-<!--            <resource>-->
-<!--                <directory>src/main/resources/config</directory>-->
-<!--                <targetPath>${basedir}/HELLO-DATA/config</targetPath>-->
-<!--            </resource>-->
+            <!--            <resource>-->
+            <!--                <directory>src/main/resources/config</directory>-->
+            <!--                <targetPath>${basedir}/HELLO-DATA/config</targetPath>-->
+            <!--            </resource>-->
         </resources>
         <plugins>
             <plugin>
@@ -124,28 +136,28 @@
                     <outputDirectory>${basedir}/HELLO-DATA/lib</outputDirectory>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <artifactId>maven-assembly-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <appendAssemblyId>false</appendAssemblyId>-->
-<!--                    &lt;!&ndash;描述文件路径&ndash;&gt;-->
-<!--                    <descriptors>-->
-<!--                        <descriptor>src/main/resources/assembly/package.xml</descriptor>-->
-<!--                    </descriptors>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        &lt;!&ndash;名字任意 &ndash;&gt;-->
-<!--                        <id>test-assembly</id>-->
-<!--                        &lt;!&ndash; 绑定到package生命周期阶段上 &ndash;&gt;-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            &lt;!&ndash; 只运行一次 &ndash;&gt;-->
-<!--                            <goal>single</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <artifactId>maven-assembly-plugin</artifactId>-->
+            <!--                <configuration>-->
+            <!--                    <appendAssemblyId>false</appendAssemblyId>-->
+            <!--                    &lt;!&ndash;描述文件路径&ndash;&gt;-->
+            <!--                    <descriptors>-->
+            <!--                        <descriptor>src/main/resources/assembly/package.xml</descriptor>-->
+            <!--                    </descriptors>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        &lt;!&ndash;名字任意 &ndash;&gt;-->
+            <!--                        <id>test-assembly</id>-->
+            <!--                        &lt;!&ndash; 绑定到package生命周期阶段上 &ndash;&gt;-->
+            <!--                        <phase>package</phase>-->
+            <!--                        <goals>-->
+            <!--                            &lt;!&ndash; 只运行一次 &ndash;&gt;-->
+            <!--                            <goal>single</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <!-- 打包成 JAR 文件 -->
             <!--      <plugin>-->
             <!--        <groupId>org.apache.maven.plugins</groupId>-->

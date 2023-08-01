@@ -1,4 +1,4 @@
-package com.lzl.datagenerator;
+package com.lzl.datagenerator.proxy;
 
 /**
  * @author LZL
