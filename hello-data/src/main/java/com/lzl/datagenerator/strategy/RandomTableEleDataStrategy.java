@@ -2,24 +2,19 @@ package com.lzl.datagenerator.strategy;
 
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.db.Db;
+import cn.hutool.log.Log;
+import com.lzl.datagenerator.config.ColumnConfig;
+import lombok.ToString;
 
 import java.sql.SQLException;
 import java.util.List;
 
 /**
- * 版权声明：本程序模块属于后台业务系统（FSPT）的一部分
- * 金证科技股份有限公司 版权所有<br>
- * <p>
- * 模块名称：期权业务-<br>
- * 模块描述：期权业务-<br>
- * 开发作者：李正良<br>
- * 创建日期：2023/08/01<br>
- * 模块版本：1.0.0.0<br>
- * ----------------------------------------------------------------<br>
- * 修改日期      版本       作者      备注<br>
- * 2023/08/01   1.0.0.0   李正良      创建<br>
- * -----------------------------------------------------------------</p>
+ * @author LZL
+ * @version v1.0
+ * @date 2023/7/31-22:24
  */
+@ToString
 public class RandomTableEleDataStrategy implements DataStrategy {
 
     private final List<Object> randomList;
@@ -39,11 +34,11 @@ public class RandomTableEleDataStrategy implements DataStrategy {
         return "rand-table-ele";
     }
 
-
-    public RandomTableEleDataStrategy(String querySql, String colName) {
+    public RandomTableEleDataStrategy(ColumnConfig columnConfig) {
         try {
-            randomList = Db.use().query(querySql).stream().map(e -> e.get(colName)).distinct().toList();
+            randomList = Db.use().query(columnConfig.getQuerySql()).stream().map(e -> e.get(columnConfig.getQueryCol())).distinct().toList();
         } catch (SQLException e) {
+            Log.get().error("构建rand-table-ele策略异常，查询SQL[{}]查询字段[{}]",columnConfig.getQuerySql(),columnConfig.getQueryCol());
             throw new RuntimeException(e);
         }
     }

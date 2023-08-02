@@ -172,4 +172,4 @@ gen
 # .idea/*.iml
 # .idea/modules
 # *.iml
-# *.ipr
+# *.ipr!/src/main/resources/db.setting

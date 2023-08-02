@@ -1,19 +1,30 @@
 package com.lzl.datagenerator.strategy;
 
+import com.lzl.datagenerator.config.ColumnConfig;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
- * 版权声明：本程序模块属于后台业务系统（FSPT）的一部分
- * 金证科技股份有限公司 版权所有<br>
- * <p>
- * 模块名称：期权业务-<br>
- * 模块描述：期权业务-<br>
- * 开发作者：李正良<br>
- * 创建日期：2023/08/01<br>
- * 模块版本：1.0.0.0<br>
- * ----------------------------------------------------------------<br>
- * 修改日期      版本       作者      备注<br>
- * 2023/08/01   1.0.0.0   李正良      创建<br>
- * -----------------------------------------------------------------</p>
+ * @author LZL
+ * @version v1.0
+ * @date 2023/7/31-22:24
  */
 public class DataStrategyFactory {
+    private static final Map<String, Function<ColumnConfig, DataStrategy>> STRATEGY_MAP = new HashMap<>();
 
+    // 添加策略映射关系
+    static {
+        STRATEGY_MAP.put("fixed-value", FixedValueDataStrategy::new);
+        STRATEGY_MAP.put("auto-inc", AutoIncDataStrategy::new);
+        STRATEGY_MAP.put("rand-ele", RandomEleDataStrategy::new);
+        STRATEGY_MAP.put("rand-table-ele", RandomTableEleDataStrategy::new);
+        STRATEGY_MAP.put("dict-value", DictValueDataStrategy::new);
+    }
+
+    public static DataStrategy createDataStrategy(String strategyName, ColumnConfig columnConfig) {
+        // 根据策略名称从映射表中获取创建策略对象的方法，并进行调用
+        return STRATEGY_MAP.getOrDefault(strategyName, DefaultDataStrategy::new).apply(columnConfig);
+    }
 }

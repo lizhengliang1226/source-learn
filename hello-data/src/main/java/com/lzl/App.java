@@ -1,6 +1,7 @@
 package com.lzl;
 
-import com.lzl.datagenerator.GlobalSetting;
+import com.lzl.datagenerator.ColDataGenerator;
+import com.lzl.datagenerator.DataGenerator;
 
 import java.sql.SQLException;
 
@@ -9,8 +10,9 @@ import java.sql.SQLException;
  */
 public class App {
     public static void main(String[] args) throws SQLException {
-        GlobalSetting globalSetting = new GlobalSetting();
-        globalSetting.init();
-        // new DataGenerator().generate();
+        ColDataGenerator colDataGenerator = new ColDataGenerator();
+        colDataGenerator.init();
+        DataGenerator dataGenerator = new DataGenerator(colDataGenerator);
+        dataGenerator.generate();
     }
 }

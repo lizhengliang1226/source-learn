@@ -1,24 +1,33 @@
 columnConfig:
-  - colName: CUST_CODE
-    strategy: fixed-value
-    fixedValue: 120000000
-  - colName: CUACCT_CODE
+  - colName: STK_CODE
     strategy: auto-inc
     baseValue: 0
-  - colName: OPT_SIDE
+  - colName: ABN_REASON
     strategy: dict-value
   - colName: OPT_NUM
-    strategy: rand-ele
-    randomEle: ["a","b","c"]
-  - colName: OPT_CODE
-    strategy: rand-table-ele
-    querySql: select OPT_NAME from OPT_INFO
-    queryCol: OPT_NAME
+    strategy: auto-inc
+    baseValue: 600000
+#  - colName: OPT_NUM
+#    strategy: rand-ele
+#    randomEle: ["a","b","c"]
+#  - colName: OPT_CODE
+#    strategy: rand-table-ele
+#    querySql: select OPT_NAME from OPT_INFO
+#    queryCol: OPT_NAME
 tableConfig:
   - tableName: OPT_INFO
-    dataCount: 100
+    dataCount: 10000
     genFlag: 1
 dictConfig:
   dictTableName: UPM_DICT_ITEMS
   dictCodeColName: DICT_CODE
   dictItemColName: DICT_ITEM
+loadDictCache: true
+colDefaultValue:
+  SETT_DATE: 20230404
+  TRD_DATE: 20230505
+  MARKET: 1
+  BOARD: 15
+patterns:
+  - reg: "^.*_DATE$"
+    value: $sysdate

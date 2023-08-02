@@ -7,6 +7,7 @@ import cn.hutool.db.ds.DSFactory;
 import cn.hutool.db.meta.*;
 import cn.hutool.log.Log;
 import com.google.common.collect.Lists;
+import com.lzl.datagenerator.config.DataConfigBean;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.lzl.datagenerator.GlobalSetting.dataCount;
 
 /**
  * @author LZL
@@ -24,23 +24,31 @@ import static com.lzl.datagenerator.GlobalSetting.dataCount;
  */
 public class DataGenerator {
     private String DEL_TABLE_TMPL = "TRUNCATE TABLE %s";
+    private final DataConfigBean dataConfigBean = DataConfigBean.getInstance();
+    private final ColDataGenerator colDataGenerator;
 
     public void generate() {
-        List<Pair<String, List<Entity>>> result = GlobalSetting.tableNames.stream().map(tableCode -> {
+        List<Pair<String, List<Entity>>> result = dataConfigBean.getTableConfig().parallelStream().filter(
+                tableConfig -> tableConfig.getGenFlag() == 1).map(tableConfig -> {
+            String tableCode = tableConfig.getTableName();
             Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(), tableCode);
             // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
             Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
             // 构建数据集
-            List<Entity> res = generateDataList(tableCode, tableInfo, uniqueIndexColAndPkSet);
+            List<Entity> res = generateDataList(tableCode, tableInfo, uniqueIndexColAndPkSet, tableConfig.getDataCount());
             // 重置列的基础数据
-            ColInfoGenerator.reset();
+            colDataGenerator.reset();
             return Pair.of(tableCode, res);
         }).toList();
         // 保存数据，先全表删除，再全量插入
         saveData(result);
     }
 
-    private static Set<String> getUniqueIndexCol(Table tableInfo) {
+    public DataGenerator(ColDataGenerator colDataGenerator) {
+        this.colDataGenerator = colDataGenerator;
+    }
+
+    private Set<String> getUniqueIndexCol(Table tableInfo) {
         return Stream.concat(tableInfo.getIndexInfoList()
                                       .stream()
                                       .filter(index -> !index.isNonUnique())
@@ -50,7 +58,7 @@ public class DataGenerator {
                      .collect(Collectors.toSet());
     }
 
-    private static List<Entity> generateDataList(String tableCode, Table tableInfo, Set<String> uniqueIndexColAndPkSet) {
+    private List<Entity> generateDataList(String tableCode, Table tableInfo, Set<String> uniqueIndexColAndPkSet, Long dataCount) {
         List<Entity> res = new ArrayList<>();
         for (int i = 0; i < dataCount; i++) {
             Entity entity = Entity.create(tableCode);
@@ -62,17 +70,17 @@ public class DataGenerator {
                 JdbcType typeEnum = column.getTypeEnum();
                 // 列名
                 String colName = column.getName();
-                // 从上往下取值，优先级从高到低
-                // 数据生成器取值
-                Object nextVal = ColInfoGenerator.getNextVal(colName);
+                // 从上往下取值，优先级从高到低，数据生成策略>默认值>字典值>类型默认值
+                // 数据生成策略器取值
+                Object nextVal = colDataGenerator.getNextVal(colName);
                 // 字段默认值
-                Object colDefaultVal = ColInfoGenerator.getDefaultValByColName(colName);
+                Object colDefaultVal = colDataGenerator.getDefaultValByColName(colName);
                 // 取字典值
-                Object dictDefaultVal = ColInfoGenerator.getDictValByColName(colName);
+                Object dictDefaultVal = colDataGenerator.getDictValByColName(colName);
                 // 类型默认值
-                Object typeDefaultVal = ColInfoGenerator.getDefaultVal(typeEnum);
-                if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null) {
-                    Log.get().error("表[{}]主键列或唯一索引列[{}]没有数据生成器，请检查!", tableCode, colName);
+                Object typeDefaultVal = colDataGenerator.getDefaultVal(typeEnum);
+                if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {
+                    Log.get().error("表[{}]主键列或唯一索引列[{}]没有配置数据生成策略或默认值，请检查!", tableCode, colName);
                     throw new RuntimeException();
                 }
                 // 根据优先级取值
@@ -94,6 +102,7 @@ public class DataGenerator {
             try {
                 Db.use().execute(String.format(DEL_TABLE_TMPL, dataPair.getKey()));
             } catch (SQLException e) {
+                Log.get().error("删除表[{}]数据失败",dataPair.getKey());
                 throw new RuntimeException(e);
             }
             Log.get().info("开始保存表{}数据，预计保存数据{}条.", dataPair.getKey(), dataPair.getValue().size());
@@ -101,6 +110,7 @@ public class DataGenerator {
                 try {
                     Db.use().insert(list);
                 } catch (SQLException e) {
+                    Log.get().error("保存表[{}]数据失败",dataPair.getKey());
                     throw new RuntimeException(e);
                 }
             });
