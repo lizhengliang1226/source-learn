@@ -31,7 +31,7 @@ public class DataGenerator {
         List<Pair<String, List<Entity>>> result = dataConfigBean.getTableConfig().parallelStream().filter(
                 tableConfig -> tableConfig.getGenFlag() == 1).map(tableConfig -> {
             String tableCode = tableConfig.getTableName();
-            Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(), tableCode);
+            Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(dataConfigBean.getJdbcGroup()), tableCode);
             // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
             Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
             // 构建数据集
@@ -100,7 +100,7 @@ public class DataGenerator {
         result.parallelStream().forEach(dataPair -> {
             Log.get().info("开始删除表{}数据.", dataPair.getKey());
             try {
-                Db.use().execute(String.format(DEL_TABLE_TMPL, dataPair.getKey()));
+                Db.use(dataConfigBean.getJdbcGroup()).execute(String.format(DEL_TABLE_TMPL, dataPair.getKey()));
             } catch (SQLException e) {
                 Log.get().error("删除表[{}]数据失败",dataPair.getKey());
                 throw new RuntimeException(e);
@@ -108,7 +108,7 @@ public class DataGenerator {
             Log.get().info("开始保存表{}数据，预计保存数据{}条.", dataPair.getKey(), dataPair.getValue().size());
             Lists.partition(dataPair.getValue(), 5000).parallelStream().forEach(list -> {
                 try {
-                    Db.use().insert(list);
+                    Db.use(dataConfigBean.getJdbcGroup()).insert(list);
                 } catch (SQLException e) {
                     Log.get().error("保存表[{}]数据失败",dataPair.getKey());
                     throw new RuntimeException(e);

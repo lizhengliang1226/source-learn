@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
  */
 @Data
 public class DataConfigBean {
+    private String jdbcGroup;
     private List<ColumnConfig> columnConfig;
     private List<TableConfig> tableConfig;
     private DictConfig dictConfig;
@@ -69,13 +70,13 @@ public class DataConfigBean {
 
     private void loadDictCache() {
         try {
-            dictCache = Db.use().findAll(dictConfig.getDictTableName())
+            dictCache = Db.use(jdbcGroup).findAll(dictConfig.getDictTableName())
                           .stream().collect(Collectors.groupingBy(entity -> entity.get(dictConfig.getDictCodeColName()),
                                                                   Collectors.mapping(entity -> entity.get(dictConfig.getDictItemColName()),
                                                                                      Collectors.toList())));
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(String.format("字典缓存加载失败，异常信息：%s", e.getMessage()));
+            throw new RuntimeException(String.format("数据库ID为[%s]的字典缓存加载失败，异常信息：%s", jdbcGroup, e.getMessage()));
         }
     }
 

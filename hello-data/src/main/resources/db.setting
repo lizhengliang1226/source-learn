@@ -1,8 +1,20 @@
 ## db.setting文件
+[oracle]
+url =
+user = fspt3
+pass = fspt
+[mysql]
+url =
+user = fspt3
+pass = fspt
+[sqlserver]
+url = jdbc:sqlserver://127.0.0.1:1433;DatabaseName=
+user = sa
+pass =
 
-url = jdbc:mysql://localhost:3306/test?useSSL=true&useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
-user = root
-pass = 991226Ab#
+
+
+
 
 ## 可选配置
 # 是否在日志中显示执行的SQL
@@ -13,4 +25,3 @@ formatSql = false
 showParams = true
 # 打印SQL的日志等级，默认debug，可以是info、warn、error
 sqlLevel = debug
-

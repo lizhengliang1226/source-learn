@@ -1,3 +1,4 @@
+jdbcGroup: oracle
 columnConfig:
   - colName: STK_CODE
     strategy: auto-inc
