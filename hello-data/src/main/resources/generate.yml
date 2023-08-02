@@ -7,6 +7,9 @@ columnConfig:
   - colName: OPT_NUM
     strategy: auto-inc
     baseValue: 600000
+  - colName: FEE_CFG_SN
+    strategy: auto-inc
+    baseValue: 0
 #  - colName: OPT_NUM
 #    strategy: rand-ele
 #    randomEle: ["a","b","c"]
@@ -17,6 +20,9 @@ columnConfig:
 tableConfig:
   - tableName: OPT_INFO
     dataCount: 10000
+    genFlag: 0
+  - tableName: STKCLS_STDFEE_RATE
+    dataCount: 100000
     genFlag: 1
 dictConfig:
   dictTableName: UPM_DICT_ITEMS
