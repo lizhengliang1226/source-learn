@@ -26,7 +26,6 @@ public class DataConfigBean {
     private DictConfig dictConfig;
     private String loadDictCache;
     private Map<String, String> colDefaultValue;
-    private boolean loadCacheFlag = true;
     private Map<Object, List<Object>> dictCache = new HashMap<>(16);
     private List<Map<String, String>> patterns = new ArrayList<>();
     private volatile static DataConfigBean DATA_CONFIG_BEAN;

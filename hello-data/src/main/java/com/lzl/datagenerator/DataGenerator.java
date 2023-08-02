@@ -78,7 +78,7 @@ public class DataGenerator {
                 // 取字典值
                 Object dictDefaultVal = colDataGenerator.getDictValByColName(colName);
                 // 类型默认值
-                Object typeDefaultVal = colDataGenerator.getDefaultVal(typeEnum);
+                Object typeDefaultVal = colDataGenerator.getDefaultValByJdbcType(typeEnum);
                 if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {
                     Log.get().error("表[{}]主键列或唯一索引列[{}]没有配置数据生成策略或默认值，请检查!", tableCode, colName);
                     throw new RuntimeException();

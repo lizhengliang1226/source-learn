@@ -34,9 +34,7 @@ public class ColDataGenerator {
     }};
     private Map<String, ColDataProvider> colDataProviderMap = new HashMap<>(16);
     private final DataConfigBean dataConfigBean = DataConfigBean.getInstance();
-    /**
-     * 全局配置加载方法，所有的配置从此处加载
-     */
+
     public void init() {
         // 加载列数据生成器
         loadColDataProvider();
@@ -70,7 +68,7 @@ public class ColDataGenerator {
         return colDataProvider.getNextVal();
     }
 
-    public Object getDefaultVal(JdbcType jdbcType) {
+    public Object getDefaultValByJdbcType(JdbcType jdbcType) {
         Object defaultVal = TYPE_DEFAULT_VAL_MAP.get(jdbcType);
         if (defaultVal == null) {
             Log.get().error("数据类型{}没有默认值设置，请检查!", jdbcType.name());
