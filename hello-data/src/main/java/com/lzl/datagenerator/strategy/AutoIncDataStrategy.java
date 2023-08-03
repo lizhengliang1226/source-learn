@@ -11,17 +11,11 @@ import lombok.ToString;
 @ToString
 public class AutoIncDataStrategy implements DataStrategy {
     private Number baseVal;
-    private final Number originVal;
     @Override
     public Object getNextVal() {
         Number returnVal=baseVal;
         baseVal=baseVal.longValue()+1;
         return returnVal;
-    }
-
-    @Override
-    public void reset() {
-        baseVal=originVal;
     }
 
     @Override
@@ -31,6 +25,5 @@ public class AutoIncDataStrategy implements DataStrategy {
 
     public AutoIncDataStrategy(ColumnConfig columnConfig) {
         this.baseVal = columnConfig.getBaseValue();
-        this.originVal = columnConfig.getBaseValue();
     }
 }

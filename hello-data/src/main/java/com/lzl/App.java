@@ -8,9 +8,7 @@ import com.lzl.datagenerator.DataGenerator;
  */
 public class App {
     public static void main(String[] args) {
-        ColDataGenerator colDataGenerator = new ColDataGenerator();
-        colDataGenerator.init();
-        DataGenerator dataGenerator = new DataGenerator(colDataGenerator);
+        DataGenerator dataGenerator = new DataGenerator(new ColDataGenerator());
         dataGenerator.generate();
     }
 }

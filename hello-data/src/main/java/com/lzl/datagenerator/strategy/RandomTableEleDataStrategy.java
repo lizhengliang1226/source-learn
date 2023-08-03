@@ -25,11 +25,6 @@ public class RandomTableEleDataStrategy implements DataStrategy {
     }
 
     @Override
-    public void reset() {
-
-    }
-
-    @Override
     public String getName() {
         return "rand-table-ele";
     }

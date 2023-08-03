@@ -21,10 +21,6 @@ public class DefaultDataStrategy implements DataStrategy {
         return baseVal++;
     }
 
-    @Override
-    public void reset() {
-        baseVal = 0L;
-    }
 
     @Override
     public String getName() {

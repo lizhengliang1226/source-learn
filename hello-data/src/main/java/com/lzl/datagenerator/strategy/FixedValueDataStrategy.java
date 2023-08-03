@@ -18,15 +18,9 @@ public class FixedValueDataStrategy implements DataStrategy {
     }
 
     @Override
-    public void reset() {
-
-    }
-
-    @Override
     public String getName() {
         return "fixed-value";
     }
-
 
     public FixedValueDataStrategy(ColumnConfig columnConfig) {
         this.fixedValue = columnConfig.getFixedValue();

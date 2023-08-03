@@ -5,7 +5,7 @@ package com.lzl.datagenerator.proxy;
  * @version v1.0
  * @date 2023/7/31-22:24
  */
-public interface ColDataProvider {
+public interface ColDataProvider extends Cloneable {
     /**
      * 返回当前数据支持器的列名
      * @return 列名

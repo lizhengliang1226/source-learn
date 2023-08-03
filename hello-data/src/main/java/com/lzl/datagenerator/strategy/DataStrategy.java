@@ -8,17 +8,14 @@ package com.lzl.datagenerator.strategy;
 public interface DataStrategy {
     /**
      * 下一个值
+     *
      * @return 下一个值
      */
     Object getNextVal();
 
     /**
-     * 重置
-     */
-    void reset();
-
-    /**
      * 策略名称
+     *
      * @return 策略名称
      */
     String getName();

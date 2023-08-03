@@ -37,14 +37,12 @@ public class ColDataProviderProxyImpl implements InvocationHandler {
             case "getNextVal" -> {
                 return strategy.getNextVal();
             }
-            case "reset" -> {
-                strategy.reset();
-            }
-            case "toString"->{
+            case "toString" -> {
                 return toString();
             }
-            default -> throw new RuntimeException(String.format("没有方法%s的代理实现", name));
+            default -> {
+                throw new RuntimeException(String.format("没有方法%s的代理实现", name));
+            }
         }
-        return null;
     }
 }

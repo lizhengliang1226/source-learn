@@ -20,11 +20,6 @@ public class DictValueDataStrategy implements DataStrategy {
     }
 
     @Override
-    public void reset() {
-
-    }
-
-    @Override
     public String getName() {
         return "dict-value";
     }

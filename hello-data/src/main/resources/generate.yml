@@ -19,12 +19,14 @@ columnConfig:
 #    querySql: select OPT_NAME from OPT_INFO
 #    queryCol: OPT_NAME
 tableConfig:
-  - tableName: OPT_INFO
-    dataCount: 10000
-    genFlag: 0
-  - tableName: STKCLS_STDFEE_RATE
-    dataCount: 100000
-    genFlag: 1
+  - OPT_INFO:10000:0
+  - STKCLS_STDFEE_RATE:10000:0
+  - OPT_CLOSE_PRICE:10000
+  - OPT_ADJUST_INFO:10000
+  - OPT_ASSET:10000
+  - Q_CUACCT_FUND:10000
+  - OPT_CUACCT_FUND:10000
+  - OPT_COMB_ASSET:10000
 dictConfig:
   dictTableName: UPM_DICT_ITEMS
   dictCodeColName: DICT_CODE
@@ -32,9 +34,19 @@ dictConfig:
 loadDictCache: true
 colDefaultValue:
   SETT_DATE: 20230404
-  TRD_DATE: 20230505
+  TRD_DATE: 20230404
   MARKET: 1
   BOARD: 15
 patterns:
   - reg: "^.*_DATE$"
     value: $sysdate
+
+
+#    [ mysql ]
+#    url = jdbc:oracle:thin:@10.203.88.25:1521:orcl
+#    user = fspt3
+#    pass = fspt
+#    [sqlserver]
+#    url = jdbc:sqlserver://127.0.0.1:1433;DatabaseName=kbssoptsett
+#    user = sa
+#    pass = ENC(GrxL5gYjZmKmwHPwK1KtBA==)

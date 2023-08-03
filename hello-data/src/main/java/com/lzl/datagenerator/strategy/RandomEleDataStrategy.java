@@ -20,11 +20,6 @@ public class RandomEleDataStrategy implements DataStrategy {
     }
 
     @Override
-    public void reset() {
-
-    }
-
-    @Override
     public String getName() {
         return "rand-ele";
     }
