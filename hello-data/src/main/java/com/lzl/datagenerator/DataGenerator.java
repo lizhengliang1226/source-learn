@@ -60,7 +60,7 @@ public class DataGenerator {
                                                                     })
                                                                     .toList();
             // 保存数据，先全表删除，再全量插入
-            saveData(result, dataConfigBean.getGroupName());
+            saveData(result, dataConfigBean.getDataSourceId());
         });
 
     }
@@ -109,7 +109,7 @@ public class DataGenerator {
      */
     private List<Entity> generateDataList(String tableCode, Long dataCount, DataConfigBean dataConfig) {
         List<Entity> res = new ArrayList<>();
-        Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(dataConfig.getGroupName()), tableCode);
+        Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(dataConfig.getDataSourceId()), tableCode);
         createTableColDataProvider(tableCode, tableInfo.getColumns(), dataConfig.getColumnConfigMap());
         // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
         Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
@@ -129,7 +129,7 @@ public class DataGenerator {
                 // 字段默认值
                 Object colDefaultVal = dataConfig.getColDefaultValue().get(colName);
                 // 取字典值
-                Object dictDefaultVal = getDictValByColName(colName, dataConfig.getGroupName());
+                Object dictDefaultVal = getDictValByColName(colName, dataConfig.getDataSourceId());
                 // 类型默认值
                 Object typeDefaultVal = getDefaultValByJdbcType(typeEnum);
                 if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Data
 public class DataConfigBean {
-    private String groupName;
+    private String dataSourceId;
     private List<ColumnConfig> columnConfig;
     private List<String> tableConfig;
     private DictConfig dictConfig;
@@ -34,7 +34,7 @@ public class DataConfigBean {
                 Map<String, ColumnConfig> map = new HashMap<>();
                 ColumnConfig clone = ObjectUtil.clone(columnConfig);
                 clone.setColName(col);
-                clone.setDataSourceId(groupName);
+                clone.setDataSourceId(dataSourceId);
                 map.put(col, columnConfig);
                 return map.entrySet().stream();
             });
@@ -47,14 +47,14 @@ public class DataConfigBean {
 
     private void loadDictCache() {
         try {
-            CacheManager.getInstance().put(groupName, Db.use(groupName).findAll(dictConfig.getDictTableName())
-                                                        .stream().collect(Collectors.groupingBy(entity -> entity.get(dictConfig.getDictCodeColName()),
+            CacheManager.getInstance().put(dataSourceId, Db.use(dataSourceId).findAll(dictConfig.getDictTableName())
+                                                           .stream().collect(Collectors.groupingBy(entity -> entity.get(dictConfig.getDictCodeColName()),
                                                                                                 Collectors.mapping(entity -> entity.get(
                                                                                                                            dictConfig.getDictItemColName()),
                                                                                                                    Collectors.toList()))));
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException(String.format("数据库ID为[%s]的字典缓存加载失败，异常信息：%s", groupName, e.getMessage()));
+            throw new RuntimeException(String.format("数据库ID为[%s]的字典缓存加载失败，异常信息：%s", dataSourceId, e.getMessage()));
         }
     }
 

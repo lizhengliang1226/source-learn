@@ -1,5 +1,5 @@
 datasourceGroupList:
-  - groupName: oracle
+  - dataSourceId: oracle
     columnConfig:
       - colName: STK_CODE
         strategy: default
