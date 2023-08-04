@@ -21,6 +21,7 @@ public class DataStrategyFactory {
         STRATEGY_MAP.put("rand-ele", RandomEleDataStrategy::new);
         STRATEGY_MAP.put("rand-table-ele", RandomTableEleDataStrategy::new);
         STRATEGY_MAP.put("dict-value", DictValueDataStrategy::new);
+        STRATEGY_MAP.put("default", DefaultDataStrategy::new);
     }
 
     public static DataStrategy createDataStrategy(String strategyName, ColumnConfig columnConfig) {

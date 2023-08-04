@@ -41,13 +41,17 @@ public class DataGenerator {
     }
 
     public void generate() {
-        configuration.getDatasourceGroupList().parallelStream().forEach(dataConfigBean -> dataConfigBean.getTableConfig()
-                                                                                                        .parallelStream()
-                                                                                                        .filter(this::checkTableConfig)
-                                                                                                        .map(tableConfig -> generateDataList(
-                                                                                                                tableConfig, dataConfigBean))
-                                                                                                        .forEach(dataPair -> saveData(dataConfigBean,
-                                                                                                                                      dataPair)));
+        configuration.getDatasourceGroupList()
+                     .parallelStream()
+                     .filter(config -> "ALL".equals(configuration.getGenerate()) || configuration.getGenerate()
+                                                                                                 .contains(config.getDataSourceId()))
+                     .forEach(dataConfigBean -> dataConfigBean.getTableConfig()
+                                                              .parallelStream()
+                                                              .filter(this::checkTableConfig)
+                                                              .map(tableConfig -> generateDataList(
+                                                                      tableConfig, dataConfigBean))
+                                                              .forEach(dataPair -> saveData(dataConfigBean,
+                                                                                            dataPair)));
 
     }
 
@@ -66,7 +70,7 @@ public class DataGenerator {
                 try {
                     Db.use(dataConfigBean.getDataSourceId()).insert(list);
                 } catch (SQLException e) {
-                    Log.get().error("保存表[{}]数据失败", dataPair.getKey());
+                    Log.get().error("保存表[{}]数据失败，原因[{}]", dataPair.getKey(),e.getMessage());
                     throw new RuntimeException(e);
                 }
             });
@@ -113,11 +117,11 @@ public class DataGenerator {
      */
     private Set<String> getUniqueIndexCol(Table tableInfo) {
         return Stream.concat(tableInfo.getIndexInfoList()
-                                      .stream()
+                                      .parallelStream()
                                       .filter(index -> !index.isNonUnique())
-                                      .flatMap(index -> index.getColumnIndexInfoList().stream())
+                                      .flatMap(index -> index.getColumnIndexInfoList().parallelStream())
                                       .map(ColumnIndexInfo::getColumnName)
-                                      .collect(Collectors.toSet()).stream(), tableInfo.getPkNames().stream())
+                                      .collect(Collectors.toSet()).parallelStream(), tableInfo.getPkNames().parallelStream())
                      .collect(Collectors.toSet());
     }
 

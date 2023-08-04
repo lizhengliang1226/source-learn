@@ -1,4 +1,11 @@
+generate: mysql
 datasourceGroupList:
+  - dataSourceId: mysql
+    columnConfig:
+      - colName: id
+        strategy: default
+    tableConfig:
+      - a:50000
   - dataSourceId: oracle
     columnConfig:
       - colName: STK_CODE

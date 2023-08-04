@@ -14,8 +14,10 @@ import java.util.List;
  */
 @Data
 public class Configuration {
+    private String generate;
     private List<DataConfigBean> datasourceGroupList;
     private static volatile Configuration CONFIGURATION;
+
     public static Configuration getInstance() {
         // 第一次检查，避免不必要的同步
         if (CONFIGURATION == null) {
@@ -23,7 +25,11 @@ public class Configuration {
                 // 第二次检查，保证只有一个实例被创建
                 if (CONFIGURATION == null) {
                     CONFIGURATION = YamlUtil.loadByPath("classpath:/generate.yml", Configuration.class);
-                    CONFIGURATION.getDatasourceGroupList().parallelStream().forEach(DataConfigBean::init);
+                    CONFIGURATION.getDatasourceGroupList()
+                                 .parallelStream()
+                                 .filter(config -> CONFIGURATION.getGenerate().equals("ALL") || CONFIGURATION.getGenerate()
+                                                                                                             .contains(config.getDataSourceId()))
+                                 .forEach(DataConfigBean::init);
                 }
             }
         }

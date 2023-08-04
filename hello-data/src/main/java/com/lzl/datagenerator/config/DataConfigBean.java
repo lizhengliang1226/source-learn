@@ -1,5 +1,6 @@
 package com.lzl.datagenerator.config;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.db.Db;
 import lombok.Data;
@@ -23,22 +24,25 @@ public class DataConfigBean {
     private List<String> tableConfig;
     private DictConfig dictConfig;
     private String loadDictCache;
-    private Map<String, String> colDefaultValue;
+    private Map<String, String> colDefaultValue =new HashMap<>(16);
     private volatile static DataConfigBean DATA_CONFIG_BEAN;
-    private Map<String, ColumnConfig> columnConfigMap;
+    private Map<String, ColumnConfig> columnConfigMap=new HashMap<>(16);
 
     private void transColumnConfig() {
-        columnConfigMap = columnConfig.parallelStream().flatMap(columnConfig -> {
-            String colName = columnConfig.getColName();
-            return Arrays.stream(colName.split(",")).flatMap(col -> {
-                Map<String, ColumnConfig> map = new HashMap<>();
-                ColumnConfig clone = ObjectUtil.clone(columnConfig);
-                clone.setColName(col);
-                clone.setDataSourceId(dataSourceId);
-                map.put(col, columnConfig);
-                return map.entrySet().stream();
-            });
-        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        if (CollectionUtil.isNotEmpty(columnConfig)) {
+            columnConfigMap = columnConfig.parallelStream().flatMap(columnConfig -> {
+                String colName = columnConfig.getColName();
+                return Arrays.stream(colName.split(",")).flatMap(col -> {
+                    Map<String, ColumnConfig> map = new HashMap<>();
+                    ColumnConfig clone = ObjectUtil.clone(columnConfig);
+                    clone.setColName(col);
+                    clone.setDataSourceId(dataSourceId);
+                    map.put(col, columnConfig);
+                    return map.entrySet().stream();
+                });
+            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
     }
 
     private DataConfigBean() {

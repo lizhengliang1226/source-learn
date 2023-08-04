@@ -3,6 +3,8 @@ package com.lzl.datagenerator.strategy;
 import com.lzl.datagenerator.config.ColumnConfig;
 import lombok.ToString;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * @author LZL
  * @version v1.0
@@ -10,12 +12,10 @@ import lombok.ToString;
  */
 @ToString
 public class AutoIncDataStrategy implements DataStrategy {
-    private Number baseVal;
+    private final AtomicLong baseVal;
     @Override
     public Object getNextVal() {
-        Number returnVal=baseVal;
-        baseVal=baseVal.longValue()+1;
-        return returnVal;
+        return baseVal.getAndIncrement();
     }
 
     @Override
@@ -24,6 +24,6 @@ public class AutoIncDataStrategy implements DataStrategy {
     }
 
     public AutoIncDataStrategy(ColumnConfig columnConfig) {
-        this.baseVal = columnConfig.getBaseValue();
+        this.baseVal =new AtomicLong(columnConfig.getBaseValue().longValue());
     }
 }
