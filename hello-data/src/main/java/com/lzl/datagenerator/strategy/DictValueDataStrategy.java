@@ -1,8 +1,8 @@
 package com.lzl.datagenerator.strategy;
 
 import cn.hutool.core.util.RandomUtil;
+import com.lzl.datagenerator.config.CacheManager;
 import com.lzl.datagenerator.config.ColumnConfig;
-import com.lzl.datagenerator.config.DataConfigBean;
 import lombok.ToString;
 
 /**
@@ -14,10 +14,10 @@ import lombok.ToString;
 public class DictValueDataStrategy implements DataStrategy {
     private final String colName;
     private final String dictColName;
-
+    private final String dataSourceId;
     @Override
     public Object getNextVal() {
-        return RandomUtil.randomEle(DataConfigBean.getInstance().getDictCache().get(dictColName == null ? colName : dictColName));
+        return RandomUtil.randomEle(CacheManager.getInstance().get(dataSourceId).get(dictColName == null ? colName : dictColName));
     }
 
     @Override
@@ -29,5 +29,6 @@ public class DictValueDataStrategy implements DataStrategy {
     public DictValueDataStrategy(ColumnConfig columnConfig) {
         this.colName = columnConfig.getColName();
         this.dictColName = columnConfig.getDictColName();
+        this.dataSourceId= columnConfig.getDataSourceId();
     }
 }

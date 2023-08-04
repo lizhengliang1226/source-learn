@@ -10,6 +10,7 @@ import cn.hutool.db.ds.DSFactory;
 import cn.hutool.db.meta.*;
 import cn.hutool.log.Log;
 import com.google.common.collect.Lists;
+import com.lzl.datagenerator.config.CacheManager;
 import com.lzl.datagenerator.config.ColumnConfig;
 import com.lzl.datagenerator.config.Configuration;
 import com.lzl.datagenerator.config.DataConfigBean;
@@ -128,7 +129,7 @@ public class DataGenerator {
                 // 字段默认值
                 Object colDefaultVal = dataConfig.getColDefaultValue().get(colName);
                 // 取字典值
-                Object dictDefaultVal = getDictValByColName(colName, dataConfig.getDictCache());
+                Object dictDefaultVal = getDictValByColName(colName, dataConfig.getGroupName());
                 // 类型默认值
                 Object typeDefaultVal = getDefaultValByJdbcType(typeEnum);
                 if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {
@@ -217,10 +218,14 @@ public class DataGenerator {
     }
 
 
-    public Object getDictValByColName(String colName, Map<Object, List<Object>> dictCache) {
-        List<Object> dictItems = dictCache.get(colName);
-        if (dictItems != null) {
-            return RandomUtil.randomEle(dictItems);
+    public Object getDictValByColName(String colName, String dataSourceId) {
+        try {
+            List<Object> dictItems = CacheManager.getInstance().get(dataSourceId).get(colName);
+            if (dictItems != null) {
+                return RandomUtil.randomEle(dictItems);
+            }
+        } catch (Exception e) {
+            return null;
         }
         return null;
     }

@@ -24,7 +24,6 @@ public class DataConfigBean {
     private DictConfig dictConfig;
     private String loadDictCache;
     private Map<String, String> colDefaultValue;
-    private Map<Object, List<Object>> dictCache = new HashMap<>(16);
     private volatile static DataConfigBean DATA_CONFIG_BEAN;
     private Map<String, ColumnConfig> columnConfigMap;
 
@@ -35,6 +34,7 @@ public class DataConfigBean {
                 Map<String, ColumnConfig> map = new HashMap<>();
                 ColumnConfig clone = ObjectUtil.clone(columnConfig);
                 clone.setColName(col);
+                clone.setDataSourceId(groupName);
                 map.put(col, columnConfig);
                 return map.entrySet().stream();
             });
@@ -47,10 +47,11 @@ public class DataConfigBean {
 
     private void loadDictCache() {
         try {
-            dictCache = Db.use(groupName).findAll(dictConfig.getDictTableName())
-                          .stream().collect(Collectors.groupingBy(entity -> entity.get(dictConfig.getDictCodeColName()),
-                                                                  Collectors.mapping(entity -> entity.get(dictConfig.getDictItemColName()),
-                                                                                     Collectors.toList())));
+            CacheManager.getInstance().put(groupName, Db.use(groupName).findAll(dictConfig.getDictTableName())
+                                                        .stream().collect(Collectors.groupingBy(entity -> entity.get(dictConfig.getDictCodeColName()),
+                                                                                                Collectors.mapping(entity -> entity.get(
+                                                                                                                           dictConfig.getDictItemColName()),
+                                                                                                                   Collectors.toList()))));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(String.format("数据库ID为[%s]的字典缓存加载失败，异常信息：%s", groupName, e.getMessage()));

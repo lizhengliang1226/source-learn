@@ -29,4 +29,7 @@ public class Configuration {
         }
         return CONFIGURATION;
     }
+
+    private Configuration() {
+    }
 }
