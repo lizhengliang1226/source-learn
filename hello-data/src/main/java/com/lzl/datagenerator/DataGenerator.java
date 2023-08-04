@@ -22,7 +22,9 @@ import com.lzl.datagenerator.strategy.DataStrategyFactory;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 
@@ -32,7 +34,6 @@ import java.util.stream.Stream;
  * @date 2023/7/31-22:24
  */
 public class DataGenerator {
-    private final String DEL_TABLE_TMPL = "TRUNCATE TABLE %s";
     private final Configuration configuration;
 
     public DataGenerator(Configuration configuration) {
@@ -40,31 +41,46 @@ public class DataGenerator {
     }
 
     public void generate() {
-        configuration.getDatasourceGroupList().parallelStream().forEach(dataConfigBean -> {
-            List<Pair<String, List<Entity>>> result = dataConfigBean.getTableConfig()
-                                                                    .parallelStream()
-                                                                    .filter(this::checkTableConfig)
-                                                                    .map(tableConfig -> {
-                                                                        String[] split = tableConfig.split(":");
-                                                                        String tableCode = split[0];
-                                                                        // 构建数据集
-                                                                        List<Entity> res;
-                                                                        try {
-                                                                            res = generateDataList(tableCode, Long.valueOf(split[1]),
-                                                                                                   dataConfigBean);
-                                                                        } catch (Exception e) {
-                                                                            Log.get().error("生成表{}数据失败，表配置为{}", tableCode, tableConfig);
-                                                                            throw e;
-                                                                        }
-                                                                        return Pair.of(tableCode, res);
-                                                                    })
-                                                                    .toList();
-            // 保存数据，先全表删除，再全量插入
-            saveData(result, dataConfigBean.getDataSourceId());
-        });
+        configuration.getDatasourceGroupList().parallelStream().forEach(dataConfigBean -> dataConfigBean.getTableConfig()
+                                                                                                        .parallelStream()
+                                                                                                        .filter(this::checkTableConfig)
+                                                                                                        .map(tableConfig -> generateDataList(
+                                                                                                                tableConfig, dataConfigBean))
+                                                                                                        .forEach(dataPair -> saveData(dataConfigBean,
+                                                                                                                                      dataPair)));
 
     }
 
+    private void saveData(DataConfigBean dataConfigBean, Pair<String, List<Entity>> dataPair) {
+        if (CollectionUtil.isNotEmpty(dataPair.getValue())) {
+            Log.get().info("开始删除表{}数据.", dataPair.getKey());
+            try {
+                String DEL_TABLE_TMPL = "TRUNCATE TABLE %s";
+                Db.use(dataConfigBean.getDataSourceId()).execute(String.format(DEL_TABLE_TMPL, dataPair.getKey()));
+            } catch (SQLException e) {
+                Log.get().error("删除表[{}]数据失败", dataPair.getKey());
+                throw new RuntimeException(e);
+            }
+            Log.get().info("开始保存表{}数据，预计保存数据{}条.", dataPair.getKey(), dataPair.getValue().size());
+            Lists.partition(dataPair.getValue(), 5000).parallelStream().forEach(list -> {
+                try {
+                    Db.use(dataConfigBean.getDataSourceId()).insert(list);
+                } catch (SQLException e) {
+                    Log.get().error("保存表[{}]数据失败", dataPair.getKey());
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            Log.get().info("表{}生成的数据量为0，不生成数据", dataPair.getKey());
+        }
+    }
+
+    /**
+     * 检查表配置
+     *
+     * @param tableConfig 表配置
+     * @return true 如果配置正确
+     */
     private boolean checkTableConfig(String tableConfig) {
         String[] s = tableConfig.trim().split(":");
         if (s.length == 1) {
@@ -89,6 +105,12 @@ public class DataGenerator {
         }
     }
 
+    /**
+     * 根据表的元数据信息获取表的唯一索引和主键的列集合
+     *
+     * @param tableInfo 表的元数据信息
+     * @return 主键和唯一索引列集合
+     */
     private Set<String> getUniqueIndexCol(Table tableInfo) {
         return Stream.concat(tableInfo.getIndexInfoList()
                                       .stream()
@@ -102,81 +124,52 @@ public class DataGenerator {
     /**
      * 创建数据集合
      *
-     * @param tableCode  表代码
-     * @param dataCount  要生成的数据量
      * @param dataConfig 数据源id
      * @return 生成的数据集合
      */
-    private List<Entity> generateDataList(String tableCode, Long dataCount, DataConfigBean dataConfig) {
-        List<Entity> res = new ArrayList<>();
+    private Pair<String, List<Entity>> generateDataList(String tableConfig, DataConfigBean dataConfig) {
+        String[] split = tableConfig.split(":");
+        String tableCode = split[0];
         Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(dataConfig.getDataSourceId()), tableCode);
         createTableColDataProvider(tableCode, tableInfo.getColumns(), dataConfig.getColumnConfigMap());
         // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
         Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
-        for (int i = 0; i < dataCount; i++) {
-            Entity entity = Entity.create(tableCode);
-            for (Column column : tableInfo.getColumns()) {
-                if ("PARTITION_FIELD".equals(column.getName())) {
-                    continue;
-                }
-                // 类型
-                JdbcType typeEnum = column.getTypeEnum();
-                // 列名
-                String colName = column.getName();
-                // 从上往下取值，优先级从高到低，数据生成策略>默认值>字典值>类型默认值
-                // 数据生成策略器取值
-                Object nextVal = getNextVal(tableCode, colName);
-                // 字段默认值
-                Object colDefaultVal = dataConfig.getColDefaultValue().get(colName);
-                // 取字典值
-                Object dictDefaultVal = getDictValByColName(colName, dataConfig.getDataSourceId());
-                // 类型默认值
-                Object typeDefaultVal = getDefaultValByJdbcType(typeEnum);
-                if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {
-                    Log.get().error("表[{}]主键列或唯一索引列[{}]没有配置数据生成策略或默认值，请检查!", tableCode, colName);
-                    throw new RuntimeException();
-                }
-                // 根据优先级取值
-                // 生成器 > 字段默认值 > 字典值 > 类型默认值
-                entity.set(colName, nextVal == null ?
-                        colDefaultVal == null ?
-                                dictDefaultVal == null ?
-                                        typeDefaultVal : dictDefaultVal : colDefaultVal : nextVal);
-            }
-            res.add(entity);
-        }
-        return res;
+        List<Entity> res = LongStream.range(0L, Long.parseLong(split[1]))
+                                     .parallel()
+                                     .mapToObj(index -> Entity.create(tableCode))
+                                     .peek(e -> tableInfo.getColumns()
+                                                         .forEach(column -> setColumnValue(dataConfig, tableCode, uniqueIndexColAndPkSet, e, column)))
+                                     .toList();
+        return Pair.of(tableCode, res);
     }
 
-    /**
-     * 保存数据，根据传入的数据源id保存数据到该数据源
-     *
-     * @param result       要保存的数据
-     * @param dataSourceId 数据源id
-     */
-    private void saveData(List<Pair<String, List<Entity>>> result, String dataSourceId) {
-        result.parallelStream().forEach(dataPair -> {
-            if (CollectionUtil.isNotEmpty(dataPair.getValue())) {
-                Log.get().info("开始删除表{}数据.", dataPair.getKey());
-                try {
-                    Db.use(dataSourceId).execute(String.format(DEL_TABLE_TMPL, dataPair.getKey()));
-                } catch (SQLException e) {
-                    Log.get().error("删除表[{}]数据失败", dataPair.getKey());
-                    throw new RuntimeException(e);
-                }
-                Log.get().info("开始保存表{}数据，预计保存数据{}条.", dataPair.getKey(), dataPair.getValue().size());
-                Lists.partition(dataPair.getValue(), 5000).parallelStream().forEach(list -> {
-                    try {
-                        Db.use(dataSourceId).insert(list);
-                    } catch (SQLException e) {
-                        Log.get().error("保存表[{}]数据失败", dataPair.getKey());
-                        throw new RuntimeException(e);
-                    }
-                });
-            } else {
-                Log.get().info("表{}生成的数据量为0，不生成数据", dataPair.getKey());
-            }
-        });
+    private void setColumnValue(DataConfigBean dataConfig, String tableCode, Set<String> uniqueIndexColAndPkSet, Entity entity, Column column) {
+        if ("PARTITION_FIELD".equals(column.getName())) {
+            return;
+        }
+        // 类型
+        JdbcType typeEnum = column.getTypeEnum();
+        // 列名
+        String colName = column.getName();
+        // 从上往下取值，优先级从高到低，数据生成策略>默认值>字典值>类型默认值
+        // 数据生成策略器取值
+        Object nextVal = getNextVal(tableCode, colName);
+        // 字段默认值
+        Object colDefaultVal = dataConfig.getColDefaultValue().get(colName);
+        // 取字典值
+        Object dictDefaultVal = getDictValByColName(colName, dataConfig.getDataSourceId());
+        // 类型默认值
+        Object typeDefaultVal = getDefaultValByJdbcType(typeEnum);
+        if (uniqueIndexColAndPkSet.contains(colName) && nextVal == null && colDefaultVal == null && dictDefaultVal == null) {
+            Log.get().error("表[{}]主键列或唯一索引列[{}]没有配置数据生成策略或默认值，请检查!", tableCode, colName);
+            throw new RuntimeException();
+        }
+        // 根据优先级取值
+        // 生成器 > 字段默认值 > 字典值 > 类型默认值
+        entity.set(colName, nextVal == null ?
+                colDefaultVal == null ?
+                        dictDefaultVal == null ?
+                                typeDefaultVal : dictDefaultVal : colDefaultVal : nextVal);
     }
 
     private static final Integer DEFAULT_VAL = 0;
@@ -187,8 +180,15 @@ public class DataGenerator {
         put(JdbcType.TIMESTAMP, LocalDateTime.now());
         put(JdbcType.INTEGER, 1);
     }};
-    private final Map<String, Map<String, ColDataProvider>> tableColDataProviderMap = new HashMap<>(16);
+    private final Map<String, Map<String, ColDataProvider>> tableColDataProviderMap = new ConcurrentHashMap<>(16);
 
+    /**
+     * 获取列数据生成器的代理实现
+     *
+     * @param colName  列名
+     * @param strategy 策略名
+     * @return 根据配置生成的代理实现
+     */
     private ColDataProvider getColDataProxy(String colName, DataStrategy strategy) {
         return ProxyUtil.newProxyInstance(new ColDataProviderProxyImpl(colName, strategy), ColDataProvider.class);
     }
@@ -208,6 +208,12 @@ public class DataGenerator {
         return colDataProvider.getNextVal();
     }
 
+    /**
+     * 获取默认值通过JDBC类型
+     *
+     * @param jdbcType jdbc类型
+     * @return JDBC类型的默认值
+     */
     public Object getDefaultValByJdbcType(JdbcType jdbcType) {
         Object defaultVal = TYPE_DEFAULT_VAL_MAP.get(jdbcType);
         if (defaultVal == null) {
@@ -217,10 +223,16 @@ public class DataGenerator {
         return defaultVal;
     }
 
-
+    /**
+     * 尝试从字典缓存获取值，获取不到返回空，不报错
+     *
+     * @param colName      列名
+     * @param dataSourceId 数据源ID
+     * @return 获取到的字典值
+     */
     public Object getDictValByColName(String colName, String dataSourceId) {
         try {
-            Map<String,List<Object>> dictCache = CacheManager.getInstance().get(dataSourceId);
+            Map<String, List<Object>> dictCache = CacheManager.getInstance().get(dataSourceId);
             List<Object> dictItems = dictCache.get(colName);
             if (dictItems != null) {
                 return RandomUtil.randomEle(dictItems);
@@ -249,6 +261,12 @@ public class DataGenerator {
         tableColDataProviderMap.put(tableCode, colDataProviderMap);
     }
 
+    /**
+     * 根据列配置创建列数据生成器
+     *
+     * @param columnConfig 列配置
+     * @return 列数据生成器
+     */
     private ColDataProvider createColDataProvider(ColumnConfig columnConfig) {
         return getColDataProxy(columnConfig.getColName(),
                                DataStrategyFactory.createDataStrategy(
