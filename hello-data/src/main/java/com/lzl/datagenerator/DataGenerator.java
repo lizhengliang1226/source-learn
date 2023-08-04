@@ -179,7 +179,7 @@ public class DataGenerator {
         });
     }
 
-    private static final Object DEFAULT_VAL = 0;
+    private static final Integer DEFAULT_VAL = 0;
     private static final Map<JdbcType, Object> TYPE_DEFAULT_VAL_MAP = new HashMap<>() {{
         put(JdbcType.VARCHAR, "1");
         put(JdbcType.CHAR, "1");
@@ -220,7 +220,8 @@ public class DataGenerator {
 
     public Object getDictValByColName(String colName, String dataSourceId) {
         try {
-            List<Object> dictItems = CacheManager.getInstance().get(dataSourceId).get(colName);
+            Map<String,List<Object>> dictCache = CacheManager.getInstance().get(dataSourceId);
+            List<Object> dictItems = dictCache.get(colName);
             if (dictItems != null) {
                 return RandomUtil.randomEle(dictItems);
             }

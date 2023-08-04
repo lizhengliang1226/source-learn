@@ -1,7 +1,6 @@
 package com.lzl.datagenerator.config;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,7 +12,7 @@ import java.util.Map;
  */
 public class CacheManager {
     private static CacheManager instance;
-    private final Map<String, Map<Object, List<Object>>> cacheData;
+    private final Map<String, Object> cacheData;
 
     // 私有构造函数，防止外部实例化
     private CacheManager() {
@@ -29,13 +28,13 @@ public class CacheManager {
     }
 
     // 添加数据到缓存
-    public void put(String key, Map<Object, List<Object>> value) {
+    public <T> void put(String key, T value) {
         cacheData.put(key, value);
     }
 
     // 从缓存中获取数据
-    public Map<Object, List<Object>> get(String key) {
-        return cacheData.get(key);
+    public <T> T get(String key) {
+        return (T) cacheData.get(key);
     }
 
     // 清除缓存中的数据

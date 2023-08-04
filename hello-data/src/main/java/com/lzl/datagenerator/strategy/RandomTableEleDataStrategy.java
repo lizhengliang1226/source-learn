@@ -1,8 +1,10 @@
 package com.lzl.datagenerator.strategy;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.db.Db;
 import cn.hutool.log.Log;
+import com.lzl.datagenerator.config.CacheManager;
 import com.lzl.datagenerator.config.ColumnConfig;
 import lombok.ToString;
 
@@ -17,10 +19,23 @@ import java.util.List;
 @ToString
 public class RandomTableEleDataStrategy implements DataStrategy {
 
-    private final List<Object> randomList;
+    private List<Object> randomList;
+    private final String dataSourceId;
+    private final String querySql;
+    private final String queryCol;
 
     @Override
     public Object getNextVal() {
+        randomList = CacheManager.getInstance().get(dataSourceId + "_" + queryCol);
+        if (CollUtil.isEmpty(randomList)) {
+            try {
+                randomList = Db.use(dataSourceId).query(querySql).stream().map(e -> e.get(queryCol)).distinct().toList();
+                CacheManager.getInstance().put(dataSourceId + "_" + queryCol, randomList);
+            } catch (SQLException e) {
+                Log.get().error("构建rand-table-ele策略异常，数据源ID[{}]查询SQL[{}]查询字段[{}]",dataSourceId, querySql, queryCol);
+                throw new RuntimeException(e);
+            }
+        }
         return RandomUtil.randomEle(randomList);
     }
 
@@ -30,11 +45,8 @@ public class RandomTableEleDataStrategy implements DataStrategy {
     }
 
     public RandomTableEleDataStrategy(ColumnConfig columnConfig) {
-        try {
-            randomList = Db.use().query(columnConfig.getQuerySql()).stream().map(e -> e.get(columnConfig.getQueryCol())).distinct().toList();
-        } catch (SQLException e) {
-            Log.get().error("构建rand-table-ele策略异常，查询SQL[{}]查询字段[{}]",columnConfig.getQuerySql(),columnConfig.getQueryCol());
-            throw new RuntimeException(e);
-        }
+        dataSourceId = columnConfig.getDataSourceId();
+        querySql = columnConfig.getQuerySql();
+        queryCol = columnConfig.getQueryCol();
     }
 }
