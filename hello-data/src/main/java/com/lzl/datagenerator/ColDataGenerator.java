@@ -31,7 +31,7 @@ public class ColDataGenerator {
         put(JdbcType.TIMESTAMP, LocalDateTime.now());
         put(JdbcType.INTEGER, 1);
     }};
-    private Map<String, Map<String, ColDataProvider>> tableColDataProviderMap = new HashMap<>(16);
+    private final Map<String, Map<String, ColDataProvider>> tableColDataProviderMap = new HashMap<>(16);
     private final DataConfigBean dataConfigBean = DataConfigBean.getInstance();
 
     private ColDataProvider getColDataProxy(String colName, DataStrategy strategy) {
@@ -64,18 +64,7 @@ public class ColDataGenerator {
 
     public Object getDefaultValByColName(String colName) {
         // 先从默认值map取，取不到进行模式匹配，匹配到就返回模式匹配的默认值
-        Object val = dataConfigBean.getColDefaultValue().get(colName);
-        if (val == null) {
-            Optional<Object> patternVal = dataConfigBean.getPatternMap().entrySet()
-                                                        .stream()
-                                                        .filter(e -> e.getKey().matcher(colName).find())
-                                                        .map(Map.Entry::getValue)
-                                                        .findAny();
-            if (patternVal.isPresent()) {
-                return patternVal.get();
-            }
-        }
-        return val;
+        return dataConfigBean.getColDefaultValue().get(colName);
     }
 
     public Object getDictValByColName(String colName) {

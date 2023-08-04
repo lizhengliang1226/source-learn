@@ -13,10 +13,11 @@ import lombok.ToString;
 @ToString
 public class DictValueDataStrategy implements DataStrategy {
     private final String colName;
+    private final String dictColName;
 
     @Override
     public Object getNextVal() {
-        return RandomUtil.randomEle(DataConfigBean.getInstance().getDictCache().get(colName));
+        return RandomUtil.randomEle(DataConfigBean.getInstance().getDictCache().get(dictColName == null ? colName : dictColName));
     }
 
     @Override
@@ -27,5 +28,6 @@ public class DictValueDataStrategy implements DataStrategy {
 
     public DictValueDataStrategy(ColumnConfig columnConfig) {
         this.colName = columnConfig.getColName();
+        this.dictColName = columnConfig.getDictColName();
     }
 }

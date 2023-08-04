@@ -1,27 +1,12 @@
-## db.setting文件
-[oracle]
-url =
-user = fspt3
-pass = fspt
-[mysql]
-url =
-user = fspt3
-pass = fspt
-[sqlserver]
-url = jdbc:sqlserver://127.0.0.1:1433;DatabaseName=
-user = sa
-pass =
-
-
-
-
-
-## 可选配置
-# 是否在日志中显示执行的SQL
 showSql = true
-# 是否格式化显示的SQL
 formatSql = false
-# 是否显示SQL参数
 showParams = true
-# 打印SQL的日志等级，默认debug，可以是info、warn、error
 sqlLevel = debug
+[oracle]
+url = jdbc:oracle:thin:@10.203.88.25:1521:orcl
+user = fspt3
+pass = fspt
+[his]
+url = jdbc:oracle:thin:@10.203.88.25:1521:orcl
+user = fspt_his3
+pass = fspt

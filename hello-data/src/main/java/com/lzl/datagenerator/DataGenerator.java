@@ -29,16 +29,25 @@ public class DataGenerator {
     private final ColDataGenerator colDataGenerator;
     private final String notGen = "0";
 
+    public DataGenerator(ColDataGenerator colDataGenerator) {
+        this.colDataGenerator = colDataGenerator;
+    }
+
     public void generate() {
-        // 此处必须串行流，否则会有线程安全问题
-        List<Pair<String, List<Entity>>> result = dataConfigBean.getTableConfig().stream().filter(this::checkTableConfig).map(tableConfig -> {
+        List<Pair<String, List<Entity>>> result = dataConfigBean.getTableConfig().parallelStream().filter(this::checkTableConfig).map(tableConfig -> {
             String[] split = tableConfig.split(":");
             String tableCode = split[0];
             Table tableInfo = MetaUtil.getTableMeta(DSFactory.get(dataConfigBean.getJdbcGroup()), tableCode);
             // 唯一索引和主键去重后的列名集合，包含在里面的就要自己定义生成器生产数据
             Set<String> uniqueIndexColAndPkSet = getUniqueIndexCol(tableInfo);
             // 构建数据集
-            List<Entity> res = generateDataList(tableCode, tableInfo, uniqueIndexColAndPkSet, Long.valueOf(split[1]));
+            List<Entity> res;
+            try {
+                res = generateDataList(tableCode, tableInfo, uniqueIndexColAndPkSet, Long.valueOf(split[1]));
+            } catch (Exception e) {
+                Log.get().error("生成表{}数据失败，表配置为{}", tableCode, tableConfig);
+                throw e;
+            }
             return Pair.of(tableCode, res);
         }).toList();
         // 保存数据，先全表删除，再全量插入
@@ -61,15 +70,11 @@ public class DataGenerator {
             return true;
         }
         if (!notGen.equals(s[2])) {
-            Log.get().warn("表{}配置了不生成数据标志，但是配置项不合法(只能为0)，默认生成该表数据", s[0]);
+            Log.get().warn("表{}配置了不生成数据标志，但是配置项不合法(只能为0)，将默认生成该表数据", s[0]);
             return true;
         } else {
             return false;
         }
-    }
-
-    public DataGenerator(ColDataGenerator colDataGenerator) {
-        this.colDataGenerator = colDataGenerator;
     }
 
     private Set<String> getUniqueIndexCol(Table tableInfo) {
@@ -84,7 +89,7 @@ public class DataGenerator {
 
     private List<Entity> generateDataList(String tableCode, Table tableInfo, Set<String> uniqueIndexColAndPkSet, Long dataCount) {
         List<Entity> res = new ArrayList<>();
-        colDataGenerator.createTableColDataProvider(tableCode,tableInfo.getColumns());
+        colDataGenerator.createTableColDataProvider(tableCode, tableInfo.getColumns());
         for (int i = 0; i < dataCount; i++) {
             Entity entity = Entity.create(tableCode);
             for (Column column : tableInfo.getColumns()) {
@@ -97,7 +102,7 @@ public class DataGenerator {
                 String colName = column.getName();
                 // 从上往下取值，优先级从高到低，数据生成策略>默认值>字典值>类型默认值
                 // 数据生成策略器取值
-                Object nextVal = colDataGenerator.getNextVal(tableCode,colName);
+                Object nextVal = colDataGenerator.getNextVal(tableCode, colName);
                 // 字段默认值
                 Object colDefaultVal = colDataGenerator.getDefaultValByColName(colName);
                 // 取字典值
@@ -144,8 +149,8 @@ public class DataGenerator {
                         throw new RuntimeException(e);
                     }
                 });
-            }else{
-                Log.get().info("表{}生成的数据量为0，不生成数据",dataPair.getKey());
+            } else {
+                Log.get().info("表{}生成的数据量为0，不生成数据", dataPair.getKey());
             }
         });
     }

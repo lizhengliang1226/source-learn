@@ -2,6 +2,7 @@ package com.lzl.datagenerator.config;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ import java.util.List;
  * @date 2023/7/31-22:24
  */
 @Data
-public class ColumnConfig {
+public class ColumnConfig implements Serializable {
     private String colName;
     private String strategy;
     private Object fixedValue;
@@ -18,4 +19,5 @@ public class ColumnConfig {
     private List<Object> randomEle;
     private String querySql;
     private String queryCol;
+    private String dictColName;
 }
