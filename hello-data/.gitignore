@@ -10,7 +10,7 @@
 .idea/**/shelf
 # AWS User-specific
 .idea/**/aws.xml
-
+config/db.setting
 # Generated files
 .idea/**/contentModel.xml
 
