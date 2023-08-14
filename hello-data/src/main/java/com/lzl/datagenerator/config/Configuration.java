@@ -24,7 +24,7 @@ public class Configuration {
             synchronized (DataConfigBean.class) {
                 // 第二次检查，保证只有一个实例被创建
                 if (CONFIGURATION == null) {
-                    CONFIGURATION = YamlUtil.loadByPath("classpath:/generate.yml", Configuration.class);
+                    CONFIGURATION = YamlUtil.loadByPath("classpath:/config/generate.yml", Configuration.class);
                     CONFIGURATION.getDatasourceGroupList()
                                  .parallelStream()
                                  .filter(config -> CONFIGURATION.getGenerate().equals("ALL") || CONFIGURATION.getGenerate()

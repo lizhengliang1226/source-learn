@@ -43,15 +43,12 @@ public class DataGenerator {
     public void generate() {
         configuration.getDatasourceGroupList()
                      .parallelStream()
-                     .filter(config -> "ALL".equals(configuration.getGenerate()) || configuration.getGenerate()
-                                                                                                 .contains(config.getDataSourceId()))
+                     .filter(config -> "ALL".equals(configuration.getGenerate()) || configuration.getGenerate().contains(config.getDataSourceId()))
                      .forEach(dataConfigBean -> dataConfigBean.getTableConfig()
                                                               .parallelStream()
                                                               .filter(this::checkTableConfig)
-                                                              .map(tableConfig -> generateDataList(
-                                                                      tableConfig, dataConfigBean))
-                                                              .forEach(dataPair -> saveData(dataConfigBean,
-                                                                                            dataPair)));
+                                                              .map(tableConfig -> generateDataList(tableConfig, dataConfigBean))
+                                                              .forEach(dataPair -> saveData(dataConfigBean, dataPair)));
 
     }
 

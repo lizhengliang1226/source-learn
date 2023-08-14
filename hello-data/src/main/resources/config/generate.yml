@@ -1,0 +1,68 @@
+generate: his
+datasourceGroupList:
+  - dataSourceId: mysql
+    columnConfig:
+      - colName: id
+        strategy: default
+    tableConfig:
+      - a:50000
+  - dataSourceId: his
+    columnConfig:
+      - colName: STK_CODE
+        strategy: default
+      - colName: ABN_REASON
+        strategy: dict-value
+      - colName: OPT_NUM
+        strategy: auto-inc
+        baseValue: 600000
+      - colName: FEE_CFG_SN
+        strategy: default
+      - colName: CUACCT_CODE
+        strategy: auto-inc
+        baseValue: 2200000000
+      - colName: TRDACCT
+        strategy: auto-inc
+        baseValue: 56200000
+      - colName: COMB_NUM
+        strategy: auto-inc
+        baseValue: 1100000
+      - colName: LEG1_TYPE,LEG2_TYPE,LEG3_TYPE,LEG4_TYPE
+        strategy: dict-value
+        dictColName: OPT_TYPE
+      - colName: LEG1_SIDE,LEG2_SIDE,LEG3_SIDE,LEG4_SIDE
+        strategy: dict-value
+        dictColName: OPT_SIDE
+      - colName: LEG1_NUM,LEG2_NUM,LEG3_NUM,LEG4_NUM
+        strategy: rand-table-ele
+        querySql: "select OPT_NUM  from OPT_INFO"
+        queryCol: OPT_NUM
+      - colName: CURRENCY
+        strategy: rand-ele
+        randomEle: ["0","1","2"]
+      - colName: CONFIRM_FLAG
+        strategy: rand-ele
+        randomEle: ["0","1"]
+      - colName: CUST_CODE
+        strategy: auto-inc
+        baseValue: 1200000000
+    tableConfig:
+      - CUST_SETT:200000
+      - OPT_INFO:100000:0
+      - STKCLS_STDFEE_RATE:100000:0
+      - OPT_CLOSE_PRICE:100000:0
+      - OPT_ADJUST_INFO:100000:0
+      - OPT_ASSET:100000:0
+      - Q_CUACCT_FUND:100000:0
+      - OPT_CUACCT_FUND:100000:0
+      - OPT_COMB_ASSET:100000:0
+    dictConfig:
+      dictTableName: UPM_DICT_ITEMS
+      dictCodeColName: DICT_CODE
+      dictItemColName: DICT_ITEM
+    loadDictCache: false
+    colDefaultValue:
+      SETT_DATE: 20230404
+      TRD_DATE: 20230404
+      MARKET: 1
+      BOARD: 15
+      SUB_CUACCT_CODE: 0

@@ -1,4 +1,4 @@
-generate: mysql
+generate: his
 datasourceGroupList:
   - dataSourceId: mysql
     columnConfig:
@@ -6,7 +6,7 @@ datasourceGroupList:
         strategy: default
     tableConfig:
       - a:50000
-  - dataSourceId: oracle
+  - dataSourceId: his
     columnConfig:
       - colName: STK_CODE
         strategy: default
@@ -46,7 +46,7 @@ datasourceGroupList:
         strategy: auto-inc
         baseValue: 1200000000
     tableConfig:
-      - CUST_SETT:10000
+      - CUST_SETT:200000
       - OPT_INFO:100000:0
       - STKCLS_STDFEE_RATE:100000:0
       - OPT_CLOSE_PRICE:100000:0
@@ -66,13 +66,3 @@ datasourceGroupList:
       MARKET: 1
       BOARD: 15
       SUB_CUACCT_CODE: 0
-
-
-#    [ mysql ]
-#    url = jdbc:oracle:thin:@10.203.88.25:1521:orcl
-#    user = fspt3
-#    pass = fspt
-#    [sqlserver]
-#    url = jdbc:sqlserver://127.0.0.1:1433;DatabaseName=kbssoptsett
-#    user = sa
-#    pass = ENC(GrxL5gYjZmKmwHPwK1KtBA==)
