@@ -2,14 +2,17 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
     <id>${pkg.dir.name}</id>
+    <!--是否生成一个包来包含所有的文件，false就直接把bin这些目录丢在项目目录下了-->
     <includeBaseDirectory>true</includeBaseDirectory>
 
     <formats>
+        <!--生成的是一个文件夹-->
         <format>dir</format>
     </formats>
 
     <fileSets>
         <fileSet>
+            <!--把target下的bin目录下-->
             <directory>${project.build.directory}/classes/bin</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>

@@ -91,6 +91,7 @@
                     <include>config/**/*.setting</include>
                     <include>lib/*</include>
                 </includes>
+                <!--代表是否使用maven的属性进行填充，当为true可以使用${}这种形式获取到maven的属性-->
                 <filtering>false</filtering>
             </resource>
         </resources>
@@ -113,6 +114,7 @@
                 <configuration>
                     <filesets>
                         <fileset>
+                            <!--清理文件-->
                             <directory>${project.basedir}</directory>
                             <followSymlinks>false</followSymlinks>
                             <includes>
@@ -135,6 +137,7 @@
                         </manifest>
                     </archive>
                     <includes>
+                        <!--只编译类到jar包中，配置忽略掉-->
                         <include>com/**/*</include>
                     </includes>
                 </configuration>
@@ -151,6 +154,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <!--复制依赖到指定的目录，这里是先复制到项目的target下，在assembly再复制到输出目录下-->
                             <includeScope>runtime</includeScope>
                             <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -166,6 +170,7 @@
                     <encoding>UTF-8</encoding>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
+                        <!--指定assembly编排文件位置-->
                         <descriptor>src/main/resources/assembly/assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
@@ -177,6 +182,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
+                            <!--指定生成的包名-->
                             <finalName>${pkg.dir.name}</finalName>
                             <outputDirectory>../</outputDirectory>
                         </configuration>

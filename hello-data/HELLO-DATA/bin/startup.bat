@@ -25,7 +25,7 @@ pause
 exit
 
 :boot
-set "RUN_JAVA=D:\DevelopmentSoftware\Java\jdk-17.0.2\bin\java"
+set "RUN_JAVA=java"
 set "ARGS=%*"
 
 set "STARTUP=%RUN_JAVA%"
