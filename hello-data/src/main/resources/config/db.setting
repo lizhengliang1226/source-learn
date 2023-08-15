@@ -2,7 +2,3 @@ showSql = true
 formatSql = false
 showParams = true
 sqlLevel = debug
-[his]
-url =
-user = fspt_his3
-pass = fspt

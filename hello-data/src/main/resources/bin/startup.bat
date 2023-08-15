@@ -39,7 +39,7 @@ echo %STARTUP%
 
 @echo/
 @echo/
-echo ----------------------KJDP Starting...-------------------
+echo ----------------------Hello Data Starting...-------------------
 title HELLO-DATA
 %STARTUP%
 pause

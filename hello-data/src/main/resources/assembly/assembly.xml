@@ -11,8 +11,8 @@
     </formats>
 
     <fileSets>
+        <!--此处的每个fileSet都是要包含的文件，都是从target目录下复制出来的-->
         <fileSet>
-            <!--把target下的bin目录下-->
             <directory>${project.build.directory}/classes/bin</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
@@ -30,11 +30,11 @@
             <fileMode>0755</fileMode>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/classes</directory>
-            <outputDirectory>./</outputDirectory>
+            <directory>${project.build.directory}/classes/config</directory>
+            <outputDirectory>config</outputDirectory>
             <includes>
-                <include>config/**/*.yml</include>
-                <include>config/**/*.setting</include>
+                <include>*.yml</include>
+                <include>*.setting</include>
             </includes>
         </fileSet>
         <fileSet>
@@ -60,6 +60,7 @@
         </fileSet>
     </fileSets>
     <files>
+        <!--此处配置自己加进来的依赖，不是用maven的pom加载进来的就写在这里-->
         <file>
             <source>${project.basedir}/src/main/resources/lib/orai18n.jar</source>
             <outputDirectory>lib</outputDirectory>
