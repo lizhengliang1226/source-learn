@@ -1,4 +1,0 @@
-showSql = true
-formatSql = false
-showParams = true
-sqlLevel = debug
